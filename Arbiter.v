@@ -56,7 +56,8 @@ module ArbiterNestLoop#(                        //default logic is to send from 
     reg     [NODE_COUNT - 1:0]          requests;                   //nodes with request to send
     reg                             	on_off;                     //on off switch for the arbiter logic
     reg     [NODE_SIGNAL_IN - 1:0]      first_grant;                //records first node to send, first bit is valid.
-    reg                                 receive_flag;
+    reg                                 receive_flag;               //tell the loop case this is receiving, so they can decrement the counter
+    reg     [TOTAL_SIGNAL_OUT - 1:0]    next_control;               //make the control signals simultaneously update for all nodes at the start of the next clock cycle (useful for node operation)
     
     assign input_sig[0] = request_port[3:0];                        //split input by node
     assign input_sig[1] = request_port[7:4];
@@ -115,11 +116,12 @@ module ArbiterNestLoop#(                        //default logic is to send from 
 				end
 		endcase
 		
-		control_port = {send_control, receive_control, bypass_control};
+		next_control = {send_control, receive_control, bypass_control};
 	end
     
     always @ (posedge clk) begin
         if(!reset) begin
+            control_port = next_control;
             priority_counter = (priority_counter == 7) ? 0 : priority_counter + 1;   // Rotating the counter, no need to give permission to node 7 since data goes one way
 			inner_counter = priority_counter;
             requests = requests | {input_sig[7][3], input_sig[6][3], input_sig[5][3],input_sig[4][3], input_sig[3][3], input_sig[2][3],input_sig[1][3], input_sig[0][3]};   //add new requests to the queue
@@ -133,17 +135,18 @@ module ArbiterNestLoop#(                        //default logic is to send from 
             receive_flag = 0;
         end
         else begin
-            priority_counter = 0;
-            inner_counter = 0;
-            requests = 8'b00000000;
-            on_off = 0;
-            unfinish_flag = 0;
-            first_grant = 0;
-            send_control = 0;
-            receive_control = 0;
-            bypass_control = 0;
-            destination = 0;
-            receive_flag = 0;
+            priority_counter <= 0;
+            inner_counter <= 0;
+            requests <= 8'b00000000;
+            on_off <= 0;
+            unfinish_flag <= 0;
+            first_grant <= 0;
+            send_control <= 0;
+            receive_control <= 0;
+            bypass_control <= 0;
+            destination <= 0;
+            receive_flag <= 0;
+            next_control <= 0;
         end
     end
     

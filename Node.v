@@ -51,13 +51,12 @@ module Node #(
 	wire    [NODE_COUNT_DIGIT - 1:0]        node_number;                       //node number of this node
 	
 	reg		[9:0]							feedback_shift_reg;									//used to generate random messages
-
 	
 	assign node_number       = NODE_NUMBER;
 	assign arbiter_signal[1] = input_port[TOTAL_IN - 1:TOTAL_IN - ARBITER_SIGNAL_IN];
 	assign arbiter_signal[0] = input_port[TOTAL_IN - ARBITER_SIGNAL_IN - 1:TOTAL_IN - ARBITER_SIGNAL_IN * 2];
 //	assign random_msg        = {feedback_shift_reg[0],feedback_shift_reg[3],feedback_shift_reg[1], node_number, feedback_shift_reg[2] ,feedback_shift_reg[8],feedback_shift_reg[4],feedback_shift_reg[6],feedback_shift_reg[7], feedback_shift_reg};	//19 bit random message
-    assign random_msg        = 22'b1101001010101010101010;
+    assign random_msg        = 22'b1101001010101010101111;
 	assign incoming_data[1]  = input_port[MSG_SIZE * 2 - 1:MSG_SIZE];
 	assign incoming_data[0]  = input_port[MSG_SIZE - 1:0];
 	
@@ -82,7 +81,7 @@ module Node #(
 	.NODE_IO_NUMBER(0),
 	.NODE_NUMBER(NODE_NUMBER)
 	)
-	NodeIO_0(
+	Node_IO_0(
 	.msg_in(incoming_data[0]),
 	.msg_rand(random_msg),
 	.control_in(arbiter_signal[0]),
